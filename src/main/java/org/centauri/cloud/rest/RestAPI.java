@@ -5,6 +5,9 @@ import org.centauri.cloud.cloud.plugin.AbstractModule;
 import org.centauri.cloud.rest.backpoint.BackpointAuthentication;
 import org.centauri.cloud.rest.backpoint.BackpointManager;
 
+import java.io.File;
+
+import static spark.Spark.staticFiles;
 import static spark.Spark.stop;
 
 public class RestAPI extends AbstractModule {
@@ -30,6 +33,8 @@ public class RestAPI extends AbstractModule {
 	@Override
 	public void onEnable() {
 		instance = this;
+		new File("files").mkdir();
+		staticFiles.externalLocation("files");
 		loadBackpoints();
 	}
 
