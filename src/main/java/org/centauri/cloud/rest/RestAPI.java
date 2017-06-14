@@ -1,14 +1,15 @@
 package org.centauri.cloud.rest;
 
+import com.google.gson.Gson;
 import lombok.Getter;
 import org.centauri.cloud.cloud.plugin.AbstractModule;
+import org.centauri.cloud.rest.auth.AuthManager;
 import org.centauri.cloud.rest.backpoint.BackpointAuthentication;
 import org.centauri.cloud.rest.backpoint.BackpointManager;
 
 import java.io.File;
 
-import static spark.Spark.staticFiles;
-import static spark.Spark.stop;
+import static spark.Spark.*;
 
 public class RestAPI extends AbstractModule {
 
@@ -34,7 +35,24 @@ public class RestAPI extends AbstractModule {
 	public void onEnable() {
 		instance = this;
 		new File("files").mkdir();
+		AuthManager manager = new AuthManager();
 		staticFiles.externalLocation("files");
+		before("*", (request, response) -> {
+			boolean valid = manager.validate("");
+			if (!valid) {
+				halt(401, "Not Allowed");
+				return;
+			}
+			boolean allowed = manager.hasPermission(request.contextPath(), "");
+			if (!allowed) {
+				halt(403, "Not Allowed");
+				return;
+			}
+		});
+		after((request, response) -> {
+			response.type("application/json");
+			response.header("Content-Encoding", "gzip");
+		});
 		loadBackpoints();
 	}
 
