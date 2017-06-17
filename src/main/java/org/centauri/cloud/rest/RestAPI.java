@@ -1,11 +1,11 @@
 package org.centauri.cloud.rest;
 
-import com.google.gson.Gson;
 import lombok.Getter;
 import org.centauri.cloud.cloud.plugin.AbstractModule;
 import org.centauri.cloud.rest.auth.AuthManager;
 import org.centauri.cloud.rest.backpoint.BackpointAuthentication;
 import org.centauri.cloud.rest.backpoint.BackpointManager;
+import org.pac4j.sparkjava.SecurityFilter;
 
 import java.io.File;
 
@@ -37,18 +37,17 @@ public class RestAPI extends AbstractModule {
 		new File("files").mkdir();
 		AuthManager manager = new AuthManager();
 		staticFiles.externalLocation("files");
-		before("*", (request, response) -> {
-			boolean valid = manager.validate("");
-			if (!valid) {
-				halt(401, "Not Allowed");
-				return;
-			}
-			boolean allowed = manager.hasPermission(request.contextPath(), "");
-			if (!allowed) {
-				halt(403, "Not Allowed");
-				return;
-			}
+		//TODO permissions
+
+		before("/auth", new SecurityFilter(manager.getConfig(), "IndirectBasicAuthClient"));
+		get("/auth", manager::jwt);
+
+		path("/api", () -> {
+			before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"));
+
+
 		});
+
 		after((request, response) -> {
 			response.type("application/json");
 			response.header("Content-Encoding", "gzip");
