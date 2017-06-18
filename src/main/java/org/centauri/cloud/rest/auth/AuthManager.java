@@ -2,6 +2,7 @@ package org.centauri.cloud.rest.auth;
 
 import com.google.gson.Gson;
 import lombok.Getter;
+import org.centauri.cloud.rest.util.MapUtil;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
@@ -46,7 +47,7 @@ public class AuthManager {
 			JwtGenerator generator = new JwtGenerator(new SecretSignatureConfiguration("12345678901234567890123456789012"));
 			token = generator.generate(profile.get());
 		}
-		return new Gson().toJson(token);
+		return new Gson().toJson(MapUtil.from("token", token));
 	}
 
 
