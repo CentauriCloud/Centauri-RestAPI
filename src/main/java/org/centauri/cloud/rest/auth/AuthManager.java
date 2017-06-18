@@ -4,10 +4,10 @@ import com.google.gson.Gson;
 import lombok.Getter;
 import org.centauri.cloud.rest.util.MapUtil;
 import org.pac4j.core.config.Config;
-import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jwt.config.signature.SecretSignatureConfiguration;
 import org.pac4j.jwt.profile.JwtGenerator;
+import org.pac4j.jwt.profile.JwtProfile;
 import org.pac4j.sparkjava.CallbackRoute;
 import org.pac4j.sparkjava.SparkWebContext;
 import spark.Request;
@@ -41,10 +41,10 @@ public class AuthManager {
 	public String jwt(final Request request, final Response response) {
 		final SparkWebContext context = new SparkWebContext(request, response);
 		final ProfileManager manager = new ProfileManager(context);
-		final Optional<CommonProfile> profile = manager.get(true);
+		final Optional<JwtProfile> profile = manager.get(true);
 		String token = "";
 		if (profile.isPresent()) {
-			JwtGenerator generator = new JwtGenerator(new SecretSignatureConfiguration("12345678901234567890123456789012"));
+			JwtGenerator<JwtProfile> generator = new JwtGenerator<>(new SecretSignatureConfiguration("12345678901234567890123456789012"));
 			token = generator.generate(profile.get());
 		}
 		return new Gson().toJson(MapUtil.from("token", token));

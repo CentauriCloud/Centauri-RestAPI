@@ -8,7 +8,6 @@ import org.pac4j.core.config.Config;
 import org.pac4j.core.config.ConfigFactory;
 import org.pac4j.http.client.direct.ParameterClient;
 import org.pac4j.http.client.indirect.IndirectBasicAuthClient;
-import org.pac4j.http.credentials.authenticator.test.SimpleTestUsernamePasswordAuthenticator;
 import org.pac4j.jwt.config.signature.SecretSignatureConfiguration;
 import org.pac4j.jwt.credentials.authenticator.JwtAuthenticator;
 
@@ -19,8 +18,7 @@ public class AuthConfig implements ConfigFactory {
 
 	@Override
 	public Config build(Object... objects) {
-		final IndirectBasicAuthClient indirectBasicAuthClient = new IndirectBasicAuthClient(new SimpleTestUsernamePasswordAuthenticator());
-
+		final IndirectBasicAuthClient indirectBasicAuthClient = new IndirectBasicAuthClient(new UsernamePasswordAuthenticator());
 		ParameterClient parameterClient = new ParameterClient("token", new JwtAuthenticator(new SecretSignatureConfiguration(salt)));
 		parameterClient.setSupportGetRequest(true);
 		parameterClient.setSupportPostRequest(false);
