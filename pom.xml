@@ -44,6 +44,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.10</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.pac4j</groupId>
@@ -68,7 +69,16 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <!-- put your configurations here -->
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
                 </configuration>
                 <executions>
                     <execution>

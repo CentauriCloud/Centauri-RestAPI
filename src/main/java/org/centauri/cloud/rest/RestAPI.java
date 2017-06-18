@@ -11,7 +11,6 @@ import org.centauri.cloud.cloud.server.SpigotServer;
 import org.centauri.cloud.cloud.template.Template;
 import org.centauri.cloud.rest.auth.AuthManager;
 import org.centauri.cloud.rest.util.MapUtil;
-import org.pac4j.sparkjava.SecurityFilter;
 
 import java.io.File;
 import java.util.Collection;
@@ -45,15 +44,15 @@ public class RestAPI extends AbstractModule {
 	public void onEnable() {
 		instance = this;
 		new File("files").mkdir();
+		staticFiles.externalLocation("files");
 		AuthManager manager = new AuthManager();
 		manager.register();
-		staticFiles.externalLocation("files");
 		//TODO permissions
-		before("/auth", new SecurityFilter(manager.getConfig(), "IndirectBasicAuthClient"));
+		//before("/auth", new SecurityFilter(manager.getConfig(), "IndirectBasicAuthClient"));
 		get("/auth", manager::jwt);
 
 		path("/api", () -> {
-			before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"));
+			//before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"));
 
 			get("/version", (request, response) -> MapUtil.from("version", Centauri.getInstance().getCloudVersion()));
 			get("/plugins", (request, response) -> {
@@ -198,14 +197,18 @@ public class RestAPI extends AbstractModule {
 				Centauri.getInstance().setFileContent(queryParam, lines);
 				return gson.toJson(MapUtil.from("status", "OK"));
 			});
-			post("/command", (request, response) -> {
+			get("/command", (request, response) -> {
 				String command = request.queryParams("cmd");
 				String server = request.queryParams("server");
 				if (command == null || server == null) {
 					response.status(404);
 					return "";
 				}
-				Centauri.getInstance().sendCommandToServer(server, command);
+				boolean fine = Centauri.getInstance().sendCommandToServer(command, server);
+				if (!fine) {
+					response.status(404);
+					return "";
+				}
 				return gson.toJson(MapUtil.from("status", "OK"));
 			});
 			get("/log", (request, response) -> gson.toJson(MapUtil.from("log", "NOT SUPPORTED YET")));
