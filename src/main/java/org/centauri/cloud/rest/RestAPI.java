@@ -11,6 +11,7 @@ import org.centauri.cloud.cloud.server.SpigotServer;
 import org.centauri.cloud.cloud.template.Template;
 import org.centauri.cloud.rest.auth.AuthManager;
 import org.centauri.cloud.rest.util.MapUtil;
+import org.pac4j.sparkjava.SecurityFilter;
 
 import java.io.File;
 import java.util.Collection;
@@ -48,11 +49,11 @@ public class RestAPI extends AbstractModule {
 		AuthManager manager = new AuthManager();
 		manager.register();
 		//TODO permissions
-		//before("/auth", new SecurityFilter(manager.getConfig(), "IndirectBasicAuthClient"));
+		before("/auth", new SecurityFilter(manager.getConfig(), "IndirectBasicAuthClient"));
 		get("/auth", manager::jwt);
 
 		path("/api", () -> {
-			//before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"));
+			before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"));
 
 			get("/version", (request, response) -> MapUtil.from("version", Centauri.getInstance().getCloudVersion()));
 			get("/plugins", (request, response) -> {

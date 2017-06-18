@@ -6,7 +6,6 @@ import org.pac4j.core.client.Clients;
 import org.pac4j.core.client.direct.AnonymousClient;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.config.ConfigFactory;
-import org.pac4j.http.client.direct.DirectBasicAuthClient;
 import org.pac4j.http.client.direct.ParameterClient;
 import org.pac4j.http.client.indirect.IndirectBasicAuthClient;
 import org.pac4j.http.credentials.authenticator.test.SimpleTestUsernamePasswordAuthenticator;
@@ -26,12 +25,11 @@ public class AuthConfig implements ConfigFactory {
 		parameterClient.setSupportGetRequest(true);
 		parameterClient.setSupportPostRequest(false);
 
-		final DirectBasicAuthClient directBasicAuthClient = new DirectBasicAuthClient(new SimpleTestUsernamePasswordAuthenticator());
-
-		final Clients clients = new Clients("http://localhost:4567/callback", indirectBasicAuthClient, parameterClient, directBasicAuthClient, new AnonymousClient());
+		final Clients clients = new Clients("http://centauri.jooel.ch/callback", indirectBasicAuthClient, parameterClient, new AnonymousClient());
 
 		final Config config = new Config(clients);
 		config.addAuthorizer("admin", new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
+		config.setHttpActionAdapter(new DemoHttpActionAdapter());
 		return config;
 	}
 }
