@@ -5,7 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import org.centauri.cloud.cloud.api.Centauri;
-import org.centauri.cloud.cloud.plugin.AbstractModule;
+import org.centauri.cloud.cloud.module.AbstractModule;
 import org.centauri.cloud.cloud.server.BungeeServer;
 import org.centauri.cloud.cloud.server.Daemon;
 import org.centauri.cloud.cloud.server.Server;
@@ -46,8 +46,8 @@ public class RestAPI extends AbstractModule {
 	@Override
 	public void onEnable() {
 		instance = this;
-		new File("files").mkdir();
-		staticFiles.externalLocation("files");
+		new File(getModuleDirectory().getPath() + "files/").mkdir();
+		staticFiles.externalLocation(getModuleDirectory().getPath() + "files/");
 		AuthManager manager = new AuthManager();
 		manager.register();
 		//TODO permissions
