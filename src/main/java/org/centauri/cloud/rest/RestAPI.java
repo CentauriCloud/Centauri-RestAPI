@@ -57,7 +57,7 @@ public class RestAPI extends AbstractModule {
 		path("/api", () -> {
 			before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"));
 
-			get("/version", (request, response) -> MapUtil.from("version", Centauri.getInstance().getCloudVersion()));
+			get("/version", (request, response) -> gson.toJson(MapUtil.from("version", Centauri.getInstance().getCloudVersion())));
 			get("/plugins", (request, response) -> {
 				List<Map<String, Object>> modules = Centauri.getInstance().getModules()
 						.stream()
