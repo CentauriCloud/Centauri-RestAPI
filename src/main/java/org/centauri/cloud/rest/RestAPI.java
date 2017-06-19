@@ -1,6 +1,8 @@
 package org.centauri.cloud.rest;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import org.centauri.cloud.cloud.api.Centauri;
 import org.centauri.cloud.cloud.plugin.AbstractModule;
@@ -160,17 +162,24 @@ public class RestAPI extends AbstractModule {
 					return "";
 				}
 				List<String> lines = Centauri.getInstance().getConfigFromTemplate(queryParam);
-				return gson.toJson(MapUtil.from("lines", lines));
+				return gson.toJson(lines);
 			});
 			get("/templateupload", (request, response) -> {
-				List<String> lines = gson.fromJson(request.body(), List.class);
-				String queryParam = request.queryParams("name");
-				if (lines == null || queryParam == null) {
+				try {
+					List<String> lines = gson.fromJson(request.body(), new TypeToken<List<String>>() {
+					}.getType());
+					String queryParam = request.queryParams("path");
+					if (lines == null || queryParam == null) {
+						response.status(404);
+						return "";
+					}
+					Centauri.getInstance().setConfigFromTemplate(queryParam, lines);
+					return gson.toJson(MapUtil.from("status", "OK"));
+				} catch (JsonSyntaxException e) {
+					//Ignore
 					response.status(404);
 					return "";
 				}
-				Centauri.getInstance().setConfigFromTemplate(queryParam, lines);
-				return gson.toJson(MapUtil.from("status", "OK"));
 			});
 			get("/libs", (request, response) -> {
 				List<File> libs = Centauri.getInstance().getLibs();
@@ -186,17 +195,24 @@ public class RestAPI extends AbstractModule {
 					return "";
 				}
 				List<String> lines = Centauri.getInstance().getFileContent(path);
-				return gson.toJson(MapUtil.from("lines", lines));
+				return gson.toJson(lines);
 			});
 			put("/fileupload", (request, response) -> {
-				List<String> lines = gson.fromJson(request.body(), List.class);
-				String queryParam = request.queryParams("path");
-				if (lines == null || queryParam == null) {
+				try {
+					List<String> lines = gson.fromJson(request.body(), new TypeToken<List<String>>() {
+					}.getType());
+					String queryParam = request.queryParams("path");
+					if (lines == null || queryParam == null) {
+						response.status(404);
+						return "";
+					}
+					Centauri.getInstance().setFileContent(queryParam, lines);
+					return gson.toJson(MapUtil.from("status", "OK"));
+				} catch (JsonSyntaxException e) {
+					//Ignore
 					response.status(404);
 					return "";
 				}
-				Centauri.getInstance().setFileContent(queryParam, lines);
-				return gson.toJson(MapUtil.from("status", "OK"));
 			});
 			get("/command", (request, response) -> {
 				String command = request.queryParams("cmd");
