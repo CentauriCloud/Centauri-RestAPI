@@ -30,7 +30,7 @@ public class RestAPI extends AbstractModule {
 
 	@Override
 	public String getName() {
-		return "RestAPI";
+		return "CentauriRestAPI";
 	}
 
 	@Override
@@ -46,8 +46,8 @@ public class RestAPI extends AbstractModule {
 	@Override
 	public void onEnable() {
 		instance = this;
-		new File(getModuleDirectory().getPath() + "files/").mkdir();
-		staticFiles.externalLocation(getModuleDirectory().getPath() + "files/");
+		new File(getModuleDirectory().getPath() + "/files/").mkdir();
+		staticFiles.externalLocation(getModuleDirectory().getPath() + "/files/");
 		AuthManager manager = new AuthManager();
 		manager.register();
 		//TODO permissions
