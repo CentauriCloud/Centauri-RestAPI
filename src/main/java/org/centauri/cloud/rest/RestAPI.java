@@ -11,14 +11,7 @@ import org.centauri.cloud.cloud.server.Daemon;
 import org.centauri.cloud.cloud.server.Server;
 import org.centauri.cloud.cloud.server.SpigotServer;
 import org.centauri.cloud.cloud.template.Template;
-import org.centauri.cloud.rest.auth.AuthManager;
 import org.centauri.cloud.rest.util.MapUtil;
-import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
-import org.pac4j.sparkjava.SecurityFilter;
-import org.pac4j.sparkjava.SparkWebContext;
-import spark.Request;
-import spark.Response;
 import spark.Session;
 
 import java.io.File;
@@ -54,23 +47,8 @@ public class RestAPI extends AbstractModule {
 		instance = this;
 		new File(getModuleDirectory().getPath() + "/files/").mkdir();
 		staticFiles.externalLocation(getModuleDirectory().getPath() + "/files/");
-		AuthManager manager = new AuthManager();
-		manager.register();
-		//TODO permissions
-		before("/auth", new SecurityFilter(manager.getConfig(), "IndirectBasicAuthClient"));
-		get("/auth", manager::jwt);
 
 		path("/api", () -> {
-			before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"), (request, response) -> {
-				List<CommonProfile> profiles = getProfiles(request, response);
-				CommonProfile commonProfile = profiles.get(0);
-				String ip = (String) commonProfile.getAttribute("ip");
-				System.out.println(ip);
-				System.out.println(request.ip());
-				if (!ip.equals(request.ip())) {
-					halt(401);
-				}
-			});
 
 			get("/version", (request, response) -> {
 				Session session = request.session();
@@ -284,12 +262,6 @@ public class RestAPI extends AbstractModule {
 	@Override
 	public void onDisable() {
 		stop();
-	}
-
-	private static List<CommonProfile> getProfiles(final Request request, final Response response) {
-		final SparkWebContext context = new SparkWebContext(request, response);
-		final ProfileManager manager = new ProfileManager(context);
-		return manager.getAll(true);
 	}
 
 }
