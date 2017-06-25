@@ -13,7 +13,13 @@ import org.centauri.cloud.cloud.server.SpigotServer;
 import org.centauri.cloud.cloud.template.Template;
 import org.centauri.cloud.rest.auth.AuthManager;
 import org.centauri.cloud.rest.util.MapUtil;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.sparkjava.SecurityFilter;
+import org.pac4j.sparkjava.SparkWebContext;
+import spark.Request;
+import spark.Response;
+import spark.Session;
 
 import java.io.File;
 import java.util.Collection;
@@ -55,9 +61,26 @@ public class RestAPI extends AbstractModule {
 		get("/auth", manager::jwt);
 
 		path("/api", () -> {
-			before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"));
+			before("/*", new SecurityFilter(manager.getConfig(), "ParameterClient"), (request, response) -> {
+				List<CommonProfile> profiles = getProfiles(request, response);
+				CommonProfile commonProfile = profiles.get(0);
+				String ip = (String) commonProfile.getAttribute("ip");
+				System.out.println(ip);
+				System.out.println(request.ip());
+				if (!ip.equals(request.ip())) {
+					halt(401);
+				}
+			});
 
-			get("/version", (request, response) -> gson.toJson(MapUtil.from("version", Centauri.getInstance().getCloudVersion())));
+			get("/version", (request, response) -> {
+				Session session = request.session();
+				System.out.println(session);
+				boolean login = session.attribute("login");
+				System.out.println(login);
+				if (login)
+					session.attribute("login", true);
+				return gson.toJson(MapUtil.from("version", Centauri.getInstance().getCloudVersion()));
+			});
 			get("/plugins", (request, response) -> {
 				List<Map<String, Object>> modules = Centauri.getInstance().getModules()
 						.stream()
@@ -254,6 +277,7 @@ public class RestAPI extends AbstractModule {
 		after((request, response) -> {
 			response.type("application/json");
 			response.header("Content-Encoding", "gzip");
+			response.header("access-control-allow-origin", "*");
 		});
 	}
 
@@ -261,4 +285,11 @@ public class RestAPI extends AbstractModule {
 	public void onDisable() {
 		stop();
 	}
+
+	private static List<CommonProfile> getProfiles(final Request request, final Response response) {
+		final SparkWebContext context = new SparkWebContext(request, response);
+		final ProfileManager manager = new ProfileManager(context);
+		return manager.getAll(true);
+	}
+
 }

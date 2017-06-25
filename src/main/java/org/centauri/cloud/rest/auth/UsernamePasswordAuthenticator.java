@@ -26,6 +26,7 @@ public class UsernamePasswordAuthenticator implements Authenticator<UsernamePass
 		profile.setId(username);
 		profile.addAttribute(JwtClaims.EXPIRATION_TIME, new Date(2018, 10, 10));
 		profile.addAttribute(Pac4jConstants.USERNAME, username);
+		profile.addAttribute("ip", context.getRemoteAddr());
 		profile.addPermission("bread.eat");
 		credentials.setUserProfile(profile);
 	}
