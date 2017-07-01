@@ -60,7 +60,8 @@ public class RestAPI extends AbstractModule {
 				return "";
 			}
 			LoginFilter.UserType type = LoginFilter.UserType.USER;
-			return JWTUtil.generateToken(type, request);
+			response.cookie("Badge", JWTUtil.generateToken(type, request));
+			return "";
 		}, gson::toJson);
 		path("/api", () -> {
 			before("*", new LoginFilter(LoginFilter.UserType.USER));
