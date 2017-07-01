@@ -37,7 +37,7 @@ public class JWTUtil {
 	private static String generateSecret() {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < 32; i++) {
-			builder.append(chars[(int) Math.round(Math.random() * chars.length)]);
+			builder.append(chars[(int) Math.round(Math.random() * chars.length - 1)]);
 		}
 		return builder.toString();
 	}
