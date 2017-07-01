@@ -55,6 +55,10 @@ public class RestAPI extends AbstractModule {
 			String username = request.headers("username");
 			String password = request.headers("password");
 			boolean verified = true;
+			if (!verified) {
+				halt(401, "Wrong credentials");
+				return "";
+			}
 			LoginFilter.UserType type = LoginFilter.UserType.USER;
 			return JWTUtil.generateToken(type, request);
 		}, gson::toJson);

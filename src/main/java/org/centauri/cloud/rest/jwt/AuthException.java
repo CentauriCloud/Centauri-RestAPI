@@ -8,5 +8,6 @@ public class AuthException extends Exception {
 
 	public AuthException(String message, int status) {
 		super(message);
+		this.status = status;
 	}
 }
