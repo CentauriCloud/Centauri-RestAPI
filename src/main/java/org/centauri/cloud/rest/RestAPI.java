@@ -49,9 +49,7 @@ public class RestAPI extends AbstractModule {
 		JWTUtil.init();
 		new File(getModuleDirectory().getPath() + "/files/").mkdir();
 		staticFiles.externalLocation(getModuleDirectory().getPath() + "/files/");
-
-
-		post("/auth", (request, response) -> {
+		post("/auth", "application/json", (request, response) -> {
 			String username = request.headers("username");
 			String password = request.headers("password");
 			boolean verified = true;
@@ -64,7 +62,7 @@ public class RestAPI extends AbstractModule {
 			return "";
 		}, gson::toJson);
 		path("/api", () -> {
-			before("*", new LoginFilter(LoginFilter.UserType.USER));
+			before("*", "application/json", new LoginFilter(LoginFilter.UserType.USER));
 			get("/version", (request, response) -> {
 				Session session = request.session();
 				System.out.println(session);
