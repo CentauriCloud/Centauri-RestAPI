@@ -250,6 +250,11 @@ public class RestAPI extends AbstractModule {
 			response.header("Content-Encoding", "gzip");
 			response.header("Access-Control-Allow-Origin", "*");
 		});
+
+		notFound((request, response) -> {
+			response.type("application/json");
+			return "{\"message\":\"Custom 404\"}";
+		});
 	}
 
 	@Override
