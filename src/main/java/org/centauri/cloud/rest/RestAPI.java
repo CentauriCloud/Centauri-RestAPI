@@ -11,13 +11,14 @@ import org.centauri.cloud.cloud.server.Daemon;
 import org.centauri.cloud.cloud.server.Server;
 import org.centauri.cloud.cloud.server.SpigotServer;
 import org.centauri.cloud.cloud.template.Template;
+import org.centauri.cloud.rest.filter.LoginFilter;
+import org.centauri.cloud.rest.jwt.JWTUtil;
 import org.centauri.cloud.rest.util.MapUtil;
 import spark.Session;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static spark.Spark.*;
@@ -45,11 +46,20 @@ public class RestAPI extends AbstractModule {
 	@Override
 	public void onEnable() {
 		instance = this;
+		JWTUtil.init();
 		new File(getModuleDirectory().getPath() + "/files/").mkdir();
 		staticFiles.externalLocation(getModuleDirectory().getPath() + "/files/");
 
-		path("/api", () -> {
 
+		post("/auth", (request, response) -> {
+			String username = request.headers("username");
+			String password = request.headers("password");
+			boolean verified = true;
+			LoginFilter.UserType type = LoginFilter.UserType.USER;
+			return JWTUtil.generateToken(type, request);
+		}, gson::toJson);
+		path("/api", () -> {
+			before("*", new LoginFilter(LoginFilter.UserType.USER));
 			get("/version", (request, response) -> {
 				Session session = request.session();
 				System.out.println(session);
@@ -57,19 +67,16 @@ public class RestAPI extends AbstractModule {
 				System.out.println(login);
 				if (login)
 					session.attribute("login", true);
-				return gson.toJson(MapUtil.from("version", Centauri.getInstance().getCloudVersion()));
-			});
-			get("/plugins", (request, response) -> {
-				List<Map<String, Object>> modules = Centauri.getInstance().getModules()
-						.stream()
-						.map(module -> MapUtil.builder()
-								.add("name", module.getName())
-								.add("author", module.getAuthor())
-								.add("version", module.getVersion())
-								.build()).collect(Collectors.toList());
-				return gson.toJson(modules);
-
-			});
+				return MapUtil.from("version", Centauri.getInstance().getCloudVersion());
+			}, gson::toJson);
+			get("/plugins", (request, response) ->
+					Centauri.getInstance().getModules()
+							.stream()
+							.map(module -> MapUtil.builder()
+									.add("name", module.getName())
+									.add("author", module.getAuthor())
+									.add("version", module.getVersion())
+									.build()).collect(Collectors.toList()), gson::toJson);
 			get("/server", (request, response) -> {
 				String queryParams = request.queryParams("server");
 				if (queryParams == null) {
@@ -81,28 +88,28 @@ public class RestAPI extends AbstractModule {
 					response.status(404);
 					return "";
 				}
-				return gson.toJson(MapUtil.builder()
+				return MapUtil.builder()
 						.add("name", server.getName())
 						.add("prefix", server.getPrefix())
 						.add("id", server.getId())
 						.add("ping", server.getPing())
-						.build());
+						.build();
 
-			});
+			}, gson::toJson);
 			get("/servers", (request, response) -> {
 				Collection<Server> servers = Centauri.getInstance().getServers();
-				List<Map<String, Object>> mappedServers = servers.stream().map(server -> MapUtil.builder()
+				return servers.stream().map(server -> MapUtil.builder()
 						.add("name", server.getName())
 						.add("prefix", server.getPrefix())
 						.add("id", server.getId())
 						.add("ping", server.getPing())
 						.build())
 						.collect(Collectors.toList());
-				return gson.toJson(mappedServers);
-			});
+			}, gson::toJson);
 			get("/spigotserver", (request, response) -> {
 				List<SpigotServer> spigotServers = Centauri.getInstance().getSpigotServers();
-				List<Map<String, Object>> mappedSpigotServers = spigotServers.stream().map(server -> MapUtil.builder()
+
+				return spigotServers.stream().map(server -> MapUtil.builder()
 						.add("name", server.getName())
 						.add("prefix", server.getPrefix())
 						.add("id", server.getId())
@@ -111,12 +118,11 @@ public class RestAPI extends AbstractModule {
 						.add("players", server.getPlayers())
 						.build())
 						.collect(Collectors.toList());
-
-				return gson.toJson(mappedSpigotServers);
-			});
+			}, gson::toJson);
 			get("/bungeeserver", (request, response) -> {
 				List<BungeeServer> bungeeServers = Centauri.getInstance().getBungeeServers();
-				List<Map<String, Object>> mappedBungeeServers = bungeeServers.stream().map(server -> MapUtil.builder()
+
+				return bungeeServers.stream().map(server -> MapUtil.builder()
 						.add("name", server.getName())
 						.add("prefix", server.getPrefix())
 						.add("id", server.getId())
@@ -124,12 +130,10 @@ public class RestAPI extends AbstractModule {
 						.add("players", server.getPlayers())
 						.build())
 						.collect(Collectors.toList());
-
-				return gson.toJson(mappedBungeeServers);
-			});
+			}, gson::toJson);
 			get("/daemonserver", (request, response) -> {
 				List<Daemon> daemons = Centauri.getInstance().getDaemons();
-				List<Map<String, Object>> mappedDaemons = daemons.stream().map(daemon -> MapUtil.builder()
+				return daemons.stream().map(daemon -> MapUtil.builder()
 						.add("name", daemon.getName())
 						.add("prefix", daemon.getPrefix())
 						.add("id", daemon.getId())
@@ -143,28 +147,25 @@ public class RestAPI extends AbstractModule {
 								.collect(Collectors.toList()))
 						.build())
 						.collect(Collectors.toList());
-				return gson.toJson(mappedDaemons);
-			});
+			}, gson::toJson);
 			get("/templates", (request, response) -> {
 				List<Template> templates = Centauri.getInstance().getTemplates();
-				List<Map<String, Object>> mappedTemplates = templates.stream().map(template -> MapUtil.builder()
+
+				return templates.stream().map(template -> MapUtil.builder()
 						.add("name", template.getName())
 						.add("minServers", template.getMinServersFree())
 						.add("maxPlayer", template.getMaxPlayers())
 						.build())
 						.collect(Collectors.toList());
-
-				return gson.toJson(mappedTemplates);
-			});
+			}, gson::toJson);
 			get("/template", (request, response) -> {
 				String queryParam = request.queryParams("name");
 				if (queryParam == null) {
 					response.status(404);
 					return "";
 				}
-				List<String> lines = Centauri.getInstance().getConfigFromTemplate(queryParam);
-				return gson.toJson(lines);
-			});
+				return Centauri.getInstance().getConfigFromTemplate(queryParam);
+			}, gson::toJson);
 			get("/templateupload", (request, response) -> {
 				try {
 					List<String> lines = gson.fromJson(request.body(), new TypeToken<List<String>>() {
@@ -175,29 +176,28 @@ public class RestAPI extends AbstractModule {
 						return "";
 					}
 					Centauri.getInstance().setConfigFromTemplate(queryParam, lines);
-					return gson.toJson(MapUtil.from("status", "OK"));
+					return MapUtil.from("status", "OK");
 				} catch (JsonSyntaxException e) {
 					//Ignore
 					response.status(404);
 					return "";
 				}
-			});
+			}, gson::toJson);
 			get("/libs", (request, response) -> {
 				List<File> libs = Centauri.getInstance().getLibs();
-				return gson.toJson(libs.stream()
+				return libs.stream()
 						.map(File::getName)
-						.collect(Collectors.toList()));
+						.collect(Collectors.toList());
 
-			});
+			}, gson::toJson);
 			get("/file", (request, response) -> {
 				String path = request.queryParams("path");
 				if (path == null) {
 					response.status(404);
 					return "";
 				}
-				List<String> lines = Centauri.getInstance().getFileContent(path);
-				return gson.toJson(lines);
-			});
+				return Centauri.getInstance().getFileContent(path);
+			}, gson::toJson);
 			put("/fileupload", (request, response) -> {
 				try {
 					List<String> lines = gson.fromJson(request.body(), new TypeToken<List<String>>() {
@@ -208,13 +208,13 @@ public class RestAPI extends AbstractModule {
 						return "";
 					}
 					Centauri.getInstance().setFileContent(queryParam, lines);
-					return gson.toJson(MapUtil.from("status", "OK"));
+					return MapUtil.from("status", "OK");
 				} catch (JsonSyntaxException e) {
 					//Ignore
 					response.status(404);
 					return "";
 				}
-			});
+			}, gson::toJson);
 			get("/command", (request, response) -> {
 				String command = request.queryParams("cmd");
 				String server = request.queryParams("server");
@@ -227,9 +227,9 @@ public class RestAPI extends AbstractModule {
 					response.status(404);
 					return "";
 				}
-				return gson.toJson(MapUtil.from("status", "OK"));
-			});
-			get("/log", (request, response) -> gson.toJson(MapUtil.from("log", "NOT SUPPORTED YET")));
+				return MapUtil.from("status", "OK");
+			}, gson::toJson);
+			get("/log", (request, response) -> MapUtil.from("log", "NOT SUPPORTED YET"), gson::toJson);
 			get("/path", (request, response) -> {
 				String path = request.queryParams("path");
 				if (path == null) {
@@ -241,13 +241,12 @@ public class RestAPI extends AbstractModule {
 					response.status(404);
 					return "";
 				}
-				List<Map<String, Object>> mappedFiles = files.stream().map(file -> MapUtil.builder()
+				return files.stream().map(file -> MapUtil.builder()
 						.add("filename", file.getName())
 						.add("isDir", file.isDirectory())
 						.build())
 						.collect(Collectors.toList());
-				return gson.toJson(mappedFiles);
-			});
+			}, gson::toJson);
 
 
 		});
@@ -255,7 +254,7 @@ public class RestAPI extends AbstractModule {
 		after((request, response) -> {
 			response.type("application/json");
 			response.header("Content-Encoding", "gzip");
-			response.header("access-control-allow-origin", "*");
+			response.header("Access-Control-Allow-Origin", "*");
 		});
 	}
 
