@@ -14,7 +14,6 @@ import org.centauri.cloud.cloud.template.Template;
 import org.centauri.cloud.rest.filter.LoginFilter;
 import org.centauri.cloud.rest.jwt.JWTUtil;
 import org.centauri.cloud.rest.util.MapUtil;
-import spark.Session;
 
 import java.io.File;
 import java.util.Collection;
@@ -63,15 +62,7 @@ public class RestAPI extends AbstractModule {
 		}, gson::toJson);
 		path("/api", () -> {
 			before("*", "application/json", new LoginFilter(LoginFilter.UserType.USER));
-			get("/version", (request, response) -> {
-				Session session = request.session();
-				System.out.println(session);
-				boolean login = session.attribute("login");
-				System.out.println(login);
-				if (login)
-					session.attribute("login", true);
-				return MapUtil.from("version", Centauri.getInstance().getCloudVersion());
-			}, gson::toJson);
+			get("/version", (request, response) -> MapUtil.from("version", Centauri.getInstance().getCloudVersion()), gson::toJson);
 			get("/plugins", (request, response) ->
 					Centauri.getInstance().getModules()
 							.stream()
