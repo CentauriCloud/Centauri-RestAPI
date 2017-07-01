@@ -1,0 +1,1 @@
+[![Build Status](https://jenkins.centauricloud.net/job/centauri-rest/badge/icon)](https://jenkins.centauricloud.net/job/centauri-rest/)
