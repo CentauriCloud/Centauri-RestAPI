@@ -46,6 +46,7 @@ public class RestAPI extends AbstractModule {
 	public void onEnable() {
 		instance = this;
 		JWTUtil.init();
+		enableCORS();
 		new File(getModuleDirectory().getPath() + "/files/").mkdir();
 		staticFiles.externalLocation(getModuleDirectory().getPath() + "/files/");
 		post("/auth", "application/json", (request, response) -> {
@@ -244,17 +245,37 @@ public class RestAPI extends AbstractModule {
 
 
 		});
-
-		after((request, response) -> {
-			response.type("application/json");
-			response.header("Content-Encoding", "gzip");
-			response.header("Access-Control-Allow-Origin", "*");
-		});
-
+		
 		notFound((request, response) -> {
 			response.type("application/json");
 			return "{\"message\":\"Custom 404\"}";
 		});
+	}
+
+	private void enableCORS() {
+
+		options("*", (request, response) -> {
+			String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
+			if (accessControlRequestHeaders != null) {
+				response.header("Access-Control-Allow-Headers", accessControlRequestHeaders);
+			}
+
+			String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
+			if (accessControlRequestMethod != null) {
+				response.header("Access-Control-Allow-Methods", accessControlRequestMethod);
+			}
+
+			return "OK";
+		});
+
+		before((request, response) -> {
+			response.header("Access-Control-Allow-Origin", "*");
+			response.header("Access-Control-Request-Method", "*");
+			response.header("Access-Control-Allow-Headers", "*");
+			response.header("Content-Encoding", "gzip");
+			response.type("application/json");
+		});
+
 	}
 
 	@Override
