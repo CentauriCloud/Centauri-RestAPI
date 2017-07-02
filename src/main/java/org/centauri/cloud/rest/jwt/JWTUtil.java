@@ -34,7 +34,7 @@ public class JWTUtil {
 		return JWT.create().withClaim("role", type.getStringed()).withClaim("ip", getIp(request)).withExpiresAt(Date.from(Instant.now().plus(Duration.ofHours(2)))).sign(algorithm);
 	}
 
-	private static String generateSecret() {
+	public static String generateSecret() {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < 32; i++) {
 			builder.append(chars[(int) Math.round(Math.random() * (chars.length - 1))]);
