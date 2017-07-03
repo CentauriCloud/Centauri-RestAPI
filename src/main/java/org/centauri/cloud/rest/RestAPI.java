@@ -61,8 +61,8 @@ public class RestAPI extends AbstractModule {
 			response.cookie("Badge", JWTUtil.generateToken(type, request));
 			return "";
 		}, gson::toJson);
+		before("api/*", new LoginFilter(LoginFilter.UserType.USER));
 		path("/api", () -> {
-			before("*", "application/json", new LoginFilter(LoginFilter.UserType.USER));
 			get("/version", (request, response) -> MapUtil.from("version", Centauri.getInstance().getCloudVersion()), gson::toJson);
 			get("/plugins", (request, response) ->
 					Centauri.getInstance().getModules()

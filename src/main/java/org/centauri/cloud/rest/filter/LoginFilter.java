@@ -19,7 +19,6 @@ public class LoginFilter implements Filter {
 
 	@Override
 	public void handle(Request request, Response response) throws Exception {
-
 		try {
 			String token = request.cookie("Badge");
 			if (token == null)
