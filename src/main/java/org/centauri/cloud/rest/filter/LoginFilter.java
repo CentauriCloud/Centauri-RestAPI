@@ -2,10 +2,12 @@ package org.centauri.cloud.rest.filter;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.centauri.cloud.rest.jwt.AuthException;
 import org.centauri.cloud.rest.jwt.JWTUtil;
+import org.centauri.cloud.rest.util.MapUtil;
 import spark.Filter;
 import spark.Request;
 import spark.Response;
@@ -26,7 +28,7 @@ public class LoginFilter implements Filter {
 			DecodedJWT jwt = JWTUtil.validateJWT(token, type);
 			JWTUtil.validateIp(request, jwt);
 		} catch (AuthException e) {
-			halt(e.getStatus(), e.getMessage());
+			halt(e.getStatus(), new Gson().toJson(MapUtil.from("status", e.getMessage())));
 		} catch (JWTVerificationException e) {
 			halt(403);
 		}
