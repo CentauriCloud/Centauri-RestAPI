@@ -46,9 +46,9 @@ public class RestAPI extends AbstractModule {
 	public void onEnable() {
 		instance = this;
 		JWTUtil.init();
-		enableCORS();
 		new File(getModuleDirectory().getPath() + "/files/").mkdir();
 		staticFiles.externalLocation(getModuleDirectory().getPath() + "/files/");
+		enableCORS();
 		post("/auth", "application/json", (request, response) -> {
 			String username = request.headers("username");
 			String password = request.headers("password");
