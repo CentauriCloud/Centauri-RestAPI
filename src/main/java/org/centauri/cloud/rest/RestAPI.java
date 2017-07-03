@@ -267,8 +267,8 @@ public class RestAPI extends AbstractModule {
 				response.header("Access-Control-Allow-Methods", accessControlRequestMethod);
 			}
 
-			return "OK";
-		});
+			return MapUtil.from("status", "OK");
+		}, gson::toJson);
 
 		before((request, response) -> {
 			response.header("Access-Control-Allow-Origin", "*");
