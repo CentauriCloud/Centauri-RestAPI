@@ -25,7 +25,7 @@ public class RestAPI extends AbstractModule {
 	@Override
 	public void onEnable() {
 		try {
-			new RestApplicaiton().run("server " + getModuleDirectory().getPath() + "/config.yml");
+			new RestApplication().run("server " + getModuleDirectory().getPath() + "/config.yml");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

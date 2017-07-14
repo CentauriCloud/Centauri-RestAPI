@@ -8,10 +8,10 @@ import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.centauri.cloud.rest.resource.CORSResponseFilter;
 import org.centauri.cloud.rest.resource.TestResource;
 
-public class RestApplicaiton extends Application<RestConfiguration> {
+public class RestApplication extends Application<RestConfiguration> {
 
 	public static void main(String[] args) throws Exception {
-		new RestApplicaiton().run(args);
+		new RestApplication().run(args);
 	}
 
 
