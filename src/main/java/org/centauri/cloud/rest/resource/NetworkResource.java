@@ -1,6 +1,7 @@
 package org.centauri.cloud.rest.resource;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.centauri.cloud.cloud.api.Centauri;
 import org.centauri.cloud.cloud.server.BungeeServer;
 import org.centauri.cloud.cloud.server.Daemon;
@@ -31,8 +32,7 @@ public class NetworkResource {
 
 	@GET
 	@Path("/players")
-	@Takes(Nothing.class)
-	@Returns(PlayerMetricsTO.class)
+	@ApiOperation(value = "gets the player count", response = PlayerMetricsTO.class)
 	public Response getPlayerCount() {
 		Centauri.getInstance();//.getAllPlayers();
 		return ok(new PlayerMetricsTO());
@@ -40,8 +40,7 @@ public class NetworkResource {
 
 	@GET
 	@Path("/nodes")
-	@Takes(Nothing.class)
-	@Returns(NodeTO.class)
+	@ApiOperation(value = "gets informations about nodes", response = NodeTO.class)
 	public Response getBungeeServers() {
 		List<SpigotServer> spigotServers = Centauri.getInstance().getSpigotServers();
 		List<BungeeServer> bungeeServers = Centauri.getInstance().getBungeeServers();
@@ -53,8 +52,7 @@ public class NetworkResource {
 
 	@GET
 	@Path("/health")
-	@Takes(Nothing.class)
-	@Returns(HealthTO.class)
+	@ApiOperation(value = "gets some health data about the whole network", response = HealthTO.class)
 	public Response getHealthDataFromNetwork() {
 		List<Daemon> daemons = Centauri.getInstance().getDaemons();
 		//...

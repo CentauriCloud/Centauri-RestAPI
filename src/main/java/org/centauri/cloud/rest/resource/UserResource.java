@@ -1,6 +1,8 @@
 package org.centauri.cloud.rest.resource;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.centauri.cloud.cloud.database.Database;
 import org.centauri.cloud.cloud.database.PSBuilder;
 import org.centauri.cloud.rest.annotations.Nothing;
@@ -36,9 +38,8 @@ public class UserResource {
 
 	@POST
 	@Path("/login")
-	@Takes(AuthTO.class)
-	@Returns(JwtTO.class)
-	public Response authentication(final AuthTO authTO) {
+	@ApiOperation(value = "this endpoint must be called before any others to authenticate", response = JwtTO.class)
+	public Response authentication(@ApiParam(value = "Authentication information (username, password)", required = true) final AuthTO authTO) {
 		boolean authenticated = database.execResult(connection -> {
 			PreparedStatement ps = PSBuilder.builder()
 					.connection(connection)
@@ -58,9 +59,8 @@ public class UserResource {
 	@POST
 	@Path("/new")
 	@RolesAllowed("ADMIN")
-	@Takes(UserInformationTO.class)
-	@Returns(Nothing.class)
-	public Response createNewUser(final UserInformationTO informationTO) {
+	@ApiOperation(value = "creates a new user. Needs admin")
+	public Response createNewUser(@ApiParam(value = "the given data for the new user", required = true) final UserInformationTO informationTO) {
 		database.execVoid(connection -> {
 			PreparedStatement ps = PSBuilder.builder()
 					.connection(connection)
@@ -78,8 +78,7 @@ public class UserResource {
 
 	@GET
 	@Path("/{id}")
-	@Takes(Nothing.class)
-	@Returns(UserInformationTO.class)
+	@ApiOperation(value = "gets some information about a single user", response = UserInformationTO.class)
 	public Response getUserInformation(@PathParam("id") int userId) {
 		UserInformationTO informationTO = database.execResult(connection -> {
 			PreparedStatement ps = PSBuilder.builder()
@@ -106,8 +105,7 @@ public class UserResource {
 
 	@DELETE
 	@Path("/{id}")
-	@Takes(Nothing.class)
-	@Returns(Nothing.class)
+	@ApiOperation(value = "deletes a user with the given id")
 	public Response deleteUser(@PathParam("id") int userId) {
 		//TODO need wifi to pull centauri master, get from db
 		return Response.status(200).build();
@@ -115,9 +113,8 @@ public class UserResource {
 
 	@POST
 	@PathParam("/{id}")
-	@Takes(UserInformationTO.class)
-	@Returns(Nothing.class)
-	public Response updateUser(@PathParam("id") int userId, UserInformationTO informationTO) {
+	@ApiOperation(value = "updates an existing user")
+	public Response updateUser(@PathParam("id") int userId, @ApiParam(value = "the new information from the user", required = true) UserInformationTO informationTO) {
 		//TODO need wifi to pull centauri master, get from db
 		return Response.status(200).build();
 
@@ -125,8 +122,7 @@ public class UserResource {
 
 	@GET
 	@Path("/")
-	@Takes(Nothing.class)
-	@Returns(UserTO.class)
+	@ApiOperation(value = "gets a list of all existing users", response = UserTO.class, responseContainer = "List")
 	public Response getAllUsers() {
 		//TODO need wifi to pull centauri master, get from db
 		return Response.status(200).entity(new ArrayList<UserTO>()).build();
@@ -134,8 +130,7 @@ public class UserResource {
 
 	@GET
 	@Path("/groups")
-	@Takes(Nothing.class)
-	@Returns(GroupTO.class)
+	@ApiOperation(value = "gets a list of all existing groups", response = GroupTO.class, responseContainer = "List")
 	public Response getAllUserGroups() {
 		//TODO need wifi to pull centauri master, get from db
 		return Response.status(200).entity(new ArrayList<GroupTO>()).build();
@@ -143,8 +138,7 @@ public class UserResource {
 
 	@GET
 	@Path("/groups/{id}")
-	@Takes(Nothing.class)
-	@Returns(GroupInformationTO.class)
+	@ApiOperation(value = "gets some information about a single group", response = GroupInformationTO.class)
 	public Response getUserGroupDetails(@PathParam("id") int groupId) {
 		//TODO need wifi to pull centauri master, get from db
 		return Response.status(200).entity(new GroupInformationTO()).build();
@@ -152,9 +146,8 @@ public class UserResource {
 
 	@POST
 	@Path("/groups")
-	@Takes(GroupInformationTO.class)
-	@Returns(Nothing.class)
-	public Response createNewUserGroup(GroupInformationTO groupInformationTO) {
+	@ApiOperation(value = "creates a new group")
+	public Response createNewUserGroup(@ApiParam(value = "the information for the new group", required = true) GroupInformationTO groupInformationTO) {
 		//TODO need wifi to pull centauri master, get from db
 		return Response.status(200).build();
 	}

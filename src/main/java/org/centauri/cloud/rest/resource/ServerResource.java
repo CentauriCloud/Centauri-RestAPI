@@ -1,6 +1,8 @@
 package org.centauri.cloud.rest.resource;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.centauri.cloud.cloud.api.Centauri;
 import org.centauri.cloud.cloud.server.Server;
 import org.centauri.cloud.rest.annotations.Nothing;
@@ -27,8 +29,7 @@ public class ServerResource {
 
 	@GET
 	@Path("/running")
-	@Takes(Nothing.class)
-	@Returns(ServerTO.class)
+	@ApiOperation(value = "gets a list of all running servers", response = ServerTO.class, responseContainer = "List")
 	public Response getRunningServers() {
 		List<ServerTO> servers = Centauri.getInstance().getServers()
 				.stream()
@@ -46,8 +47,7 @@ public class ServerResource {
 
 	@GET
 	@Path("/{id}")
-	@Takes(Nothing.class)
-	@Returns(ServerInformationTO.class)
+	@ApiOperation(value = "gets some information about a single server", response = ServerInformationTO.class)
 	public Response getInformation(@PathParam("id") String serverId) {
 		Server server = Centauri.getInstance().getServer(serverId);
 		ServerInformationTO informationTO = new ServerInformationTO(server.getId() + "", server.getHost(), -1, server.getPing(), null, server.getPlayers());
@@ -56,17 +56,15 @@ public class ServerResource {
 
 	@POST
 	@Path("/{id}")
-	@Takes(ActionTO.class)
-	@Returns(Nothing.class)
-	public Response executeAction(@PathParam("id") String serverId, ActionTO actionTO) {
+	@ApiOperation(value = "executes a given action")
+	public Response executeAction(@PathParam("id") String serverId, @ApiParam(value = "the action which should be triggered", required = true) ActionTO actionTO) {
 		Centauri.getInstance().getServer(serverId);//do sumthin
 		return ok();
 	}
 
 	@DELETE
 	@Path("/{id}")
-	@Takes(Nothing.class)
-	@Returns(Nothing.class)
+	@ApiOperation(value = "stops a given server")
 	public Response stopServer(@PathParam("id") String serverId) {
 		Server server = Centauri.getInstance().getServer(serverId);
 		server.kill();
