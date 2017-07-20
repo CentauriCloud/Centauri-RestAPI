@@ -1,5 +1,6 @@
 package org.centauri.cloud.rest.filter;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -23,13 +24,13 @@ public class LoginFilter {
 //		}
 //	}
 //
-//	public enum UserType {
-//		ADMIN("admin"), USER("user");
-//
-//		@Getter private String stringed;
-//
-//		UserType(String stringed) {
-//			this.stringed = stringed;
-//		}
-//	}
+	public enum UserType {
+		ADMIN("admin"), USER("user");
+
+		@Getter private String stringed;
+
+		UserType(String stringed) {
+			this.stringed = stringed;
+		}
+	}
 }

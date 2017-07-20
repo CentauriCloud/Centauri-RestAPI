@@ -3,29 +3,29 @@ package org.centauri.cloud.rest;
 import lombok.Getter;
 import org.centauri.cloud.cloud.module.AbstractModule;
 
-public class RestAPI extends AbstractModule {
+public class RestAPI {
 
 	@Getter private static RestAPI instance;
 
-	@Override
+
 	public String getName() {
 		return "CentauriRestAPI";
 	}
 
-	@Override
+
 	public String getVersion() {
 		return "1.0-SNAPSHOT";
 	}
 
-	@Override
+
 	public String getAuthor() {
 		return "Centauri Developer Team";
 	}
 
-	@Override
+
 	public void onEnable() {
 		try {
-			new RestApplication().run("server " + getModuleDirectory().getPath() + "/config.yml");
+			new RestApplication().run("server " +"/config.yml");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
