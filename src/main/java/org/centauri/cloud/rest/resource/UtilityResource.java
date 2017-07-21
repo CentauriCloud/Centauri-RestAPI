@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 import static org.centauri.cloud.rest.util.ResponseFactory.ok;
 
 @Api(value = "/utility", description = "different things")
+@Path("/")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UtilityResource {
@@ -37,5 +38,4 @@ public class UtilityResource {
 
 		return ok();
 	}
-
 }

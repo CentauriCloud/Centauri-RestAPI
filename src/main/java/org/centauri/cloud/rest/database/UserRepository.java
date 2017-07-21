@@ -22,10 +22,15 @@ public class UserRepository {
 	}
 
 	public String authenticate(String email, String password) {
-		return database.execResult(context -> context.selectFrom(USER)
-				.where(USER.EMAIL.eq(email))
-				.and(USER.PASSWORD.eq(password))
-				.fetchOne(USER.USERNAME));
+		return database.execResult(context -> {
+			UserRecord record = context.selectFrom(USER)
+					.where(USER.EMAIL.eq(email))
+					.and(USER.PASSWORD.eq(password))
+					.fetchOne();
+			record.setLastlogin(null);
+			record.store();
+			return record.getUsername();
+		});
 	}
 
 	public Optional<User> getUser(int id) {
@@ -43,7 +48,12 @@ public class UserRepository {
 
 	public boolean update(User user) {
 		return database.execResult(dslContext -> {
-			UserRecord record = dslContext.newRecord(USER, user);
+			UserRecord record = dslContext.fetchOne(USER, USER.ID.eq(user.getId()));
+			record.setUsername(user.getUsername());
+			record.setPassword(user.getPassword());
+			record.setEmail(user.getEmail());
+			record.setActive(user.getActive());
+			record.setGroupFk(user.getGroupFk());
 			return record.store() > 0;
 		});
 	}

@@ -8,6 +8,7 @@ import io.dropwizard.setup.Environment;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
+import org.centauri.cloud.rest.jwt.JWTUtil;
 import org.centauri.cloud.rest.resource.*;
 
 public class RestApplication extends Application<RestConfiguration> {
@@ -24,8 +25,9 @@ public class RestApplication extends Application<RestConfiguration> {
 
 	@Override
 	public void run(RestConfiguration restConfiguration, Environment environment) throws Exception {
-		environment.jersey().register(ApiListingResource.class);
-		environment.jersey().register(SwaggerSerializers.class);
+		JWTUtil.init();
+		environment.jersey().register(new ApiListingResource());
+		environment.jersey().register(new SwaggerSerializers());
 		environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
 		BeanConfig config = new BeanConfig();
@@ -33,11 +35,13 @@ public class RestApplication extends Application<RestConfiguration> {
 		config.setVersion("1.0.0");
 		config.setResourcePackage("org.centauri.cloud.rest.resource");
 		config.setScan(true);
-		environment.jersey().register(CORSResponseFilter.class);
+		environment.jersey().register(new CORSResponseFilter());
 
-		environment.jersey().register(NetworkResource.class);
-		environment.jersey().register(ServerResource.class);
-		environment.jersey().register(TemplatesResource.class);
-		environment.jersey().register(UserResource.class);
+		environment.jersey().register(new UserResource());
+		environment.jersey().register(new NetworkResource());
+		environment.jersey().register(new ServerResource());
+		environment.jersey().register(new TemplatesResource());
+		environment.jersey().register(new CloudResource());
+		environment.jersey().register(new UtilityResource());
 	}
 }

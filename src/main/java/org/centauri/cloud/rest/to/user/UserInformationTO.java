@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.Email;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,7 +27,7 @@ public class UserInformationTO {
 	@NotNull
 	@Size(max = 30)
 	private String password;
-	private String[] customPermissions;
+	private List<String> customPermissions;
 	private int userGroupId;
 	private long lastLogin;
 	private boolean active;

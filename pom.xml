@@ -37,15 +37,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-jersey2-jaxrs</artifactId>
-            <version>1.5.16</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/io.dropwizard/dropwizard-assets -->
-        <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-assets</artifactId>
             <version>1.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jersey2-jaxrs</artifactId>
+            <version>1.5.16</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

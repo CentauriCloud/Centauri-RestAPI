@@ -16,12 +16,11 @@ import org.centauri.cloud.rest.to.user.UserTO;
 import org.jooq.generated.rest.tables.pojos.Group;
 import org.jooq.generated.rest.tables.pojos.User;
 
-import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,7 +40,7 @@ public class UserResource {
 	@POST
 	@Path("/login")
 	@ApiOperation(value = "this endpoint must be called before any others to authenticate", response = JwtTO.class)
-	public Response authentication(@ApiParam(value = "Authentication information (username, password)", required = true) final AuthTO authTO) {
+	public Response authentication(@ApiParam(value = "Authentication information (username, password)", required = true) @NotNull @Valid final AuthTO authTO) {
 		String username = userRepository.authenticate(authTO.getEmail(), authTO.getPassword());
 		if (username != null)
 			return ok(new JwtTO(JWTUtil.generateToken(LoginFilter.UserType.USER, "")));
@@ -50,16 +49,15 @@ public class UserResource {
 
 	@POST
 	@Path("/new")
-	@RolesAllowed("ADMIN")
 	@ApiOperation(value = "creates a new user. Needs admin")
-	public Response createNewUser(@ApiParam(value = "the given data for the new user", required = true) @Valid final UserInformationTO informationTO) {
+	public Response createNewUser(@ApiParam(value = "the given data for the new user", required = true) @NotNull @Valid final UserInformationTO informationTO) {
 		User user = new User(
 				null,
 				informationTO.getUsername(),
 				informationTO.getPassword(),
 				informationTO.getEmail(),
 				informationTO.getUserGroupId(),
-				new Timestamp(informationTO.getLastLogin()),
+				null,
 				informationTO.isActive()
 		);
 		int id = userRepository.createNewUser(user);
@@ -99,16 +97,16 @@ public class UserResource {
 	}
 
 	@POST
-	@PathParam("/{id}")
+	@Path("/{id}")
 	@ApiOperation(value = "updates an existing user")
-	public Response updateUser(@PathParam("id") int userId, @ApiParam(value = "the new information from the user", required = true) @Valid final UserInformationTO informationTO) {
+	public Response updateUser(@PathParam("id") int userId, @ApiParam(value = "the new information from the user", required = true) @NotNull @Valid final UserInformationTO informationTO) {
 		User user = new User(
 				userId,
 				informationTO.getUsername(),
 				informationTO.getPassword(),
 				informationTO.getEmail(),
 				informationTO.getUserGroupId(),
-				new Timestamp(informationTO.getLastLogin()),
+				null,
 				informationTO.isActive()
 		);
 		boolean updated = userRepository.update(user);
@@ -156,7 +154,7 @@ public class UserResource {
 	@POST
 	@Path("/groups")
 	@ApiOperation(value = "creates a new group")
-	public Response createNewUserGroup(@ApiParam(value = "the information for the new group", required = true) @Valid GroupInformationTO groupInformationTO) {
+	public Response createNewUserGroup(@ApiParam(value = "the information for the new group", required = true) @NotNull @Valid GroupInformationTO groupInformationTO) {
 		Group group = new Group(null, groupInformationTO.getName(), groupInformationTO.getDescription(), groupInformationTO.isActive());
 		int id = groupRepository.createNewGroup(group);
 		groupInformationTO.setId(id);
