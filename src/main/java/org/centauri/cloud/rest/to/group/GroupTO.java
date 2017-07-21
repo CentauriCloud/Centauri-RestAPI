@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GroupTO {
 
-	private String bla;
+	private String name;
 }
