@@ -14,7 +14,7 @@ public class UserInformationTO {
 	private String password;
 	private String[] customPermissions;
 	private String userGroup;
-	private int lastLogin;
+	private long lastLogin;
 	private boolean active;
 
 }

@@ -20,7 +20,6 @@ public class RestApplication extends Application<RestConfiguration> {
 	@Override
 	public void initialize(Bootstrap<RestConfiguration> bootstrap) {
 		bootstrap.addBundle(new AssetsBundle("/swagger", "/swagger", "index.html"));
-
 	}
 
 	@Override

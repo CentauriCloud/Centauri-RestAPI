@@ -3,8 +3,7 @@ package org.centauri.cloud.rest.resource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.centauri.cloud.cloud.database.Database;
-import org.centauri.cloud.cloud.database.PSBuilder;
+import org.centauri.cloud.rest.database.UserRepository;
 import org.centauri.cloud.rest.filter.LoginFilter;
 import org.centauri.cloud.rest.jwt.JWTUtil;
 import org.centauri.cloud.rest.to.auth.AuthTO;
@@ -13,14 +12,17 @@ import org.centauri.cloud.rest.to.group.GroupInformationTO;
 import org.centauri.cloud.rest.to.group.GroupTO;
 import org.centauri.cloud.rest.to.user.UserInformationTO;
 import org.centauri.cloud.rest.to.user.UserTO;
+import org.jooq.generated.rest.tables.pojos.User;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.centauri.cloud.rest.util.ResponseFactory.fail;
 import static org.centauri.cloud.rest.util.ResponseFactory.ok;
@@ -31,24 +33,15 @@ import static org.centauri.cloud.rest.util.ResponseFactory.ok;
 @Produces(MediaType.APPLICATION_JSON)
 public class UserResource {
 
-	private Database database = Database.getInstance();
+	private UserRepository repository = new UserRepository();
 
 	@POST
 	@Path("/login")
 	@ApiOperation(value = "this endpoint must be called before any others to authenticate", response = JwtTO.class)
 	public Response authentication(@ApiParam(value = "Authentication information (username, password)", required = true) final AuthTO authTO) {
-		boolean authenticated = database.execResult(connection -> {
-			PreparedStatement ps = PSBuilder.builder()
-					.connection(connection)
-					.query("SELECT * FROM user WHERE username=? AND password=?")
-					.variable(authTO.getUsername())
-					.variable(authTO.getPassword())
-					.build();
-			ResultSet rs = ps.executeQuery();
-			return rs.next();
-		});
-		if (authenticated) {
-			return ok(JWTUtil.generateToken(LoginFilter.UserType.USER, ""));
+		String username = repository.authenticate(authTO.getEmail(), authTO.getPassword());
+		if (username != null) {
+			return ok(new JwtTO(JWTUtil.generateToken(LoginFilter.UserType.USER, "")));
 		}
 		return fail("Wrong credentials");
 	}
@@ -58,18 +51,8 @@ public class UserResource {
 	@RolesAllowed("ADMIN")
 	@ApiOperation(value = "creates a new user. Needs admin")
 	public Response createNewUser(@ApiParam(value = "the given data for the new user", required = true) final UserInformationTO informationTO) {
-		database.execVoid(connection -> {
-			PreparedStatement ps = PSBuilder.builder()
-					.connection(connection)
-					.query("INSERT INTO user (username, password, email, group) VALUES (?, ?, ?, ?)")
-					.variable(informationTO.getUserGroup())
-					.variable(informationTO.getPassword())
-					.variable(informationTO.getEmail())
-					.variable(informationTO.getUserGroup())
-					.build();
-			ps.executeUpdate();
-
-		}, false);
+		User user = new User(null, informationTO.getUsername(), informationTO.getPassword(), informationTO.getEmail(), informationTO.getUserGroup(), new Timestamp(informationTO.getLastLogin()), informationTO.isActive());
+		repository.createNewUser(user);
 		return ok();
 	}
 
@@ -77,26 +60,19 @@ public class UserResource {
 	@Path("/{id}")
 	@ApiOperation(value = "gets some information about a single user", response = UserInformationTO.class)
 	public Response getUserInformation(@PathParam("id") int userId) {
-		UserInformationTO informationTO = database.execResult(connection -> {
-			PreparedStatement ps = PSBuilder.builder()
-					.connection(connection)
-					.query("SELECT * FROM user WHERE id=?")
-					.variable(userId)
-					.build();
-			ResultSet rs = ps.executeQuery();
-			if (rs.next())
-				return new UserInformationTO(
-						rs.getString("username"),
-						rs.getString("email"),
-						rs.getString("password"),
-						null,
-						rs.getString("group"),
-						rs.getInt("lastLogin"),
-						rs.getBoolean("active"));
-			return null;
-		});
-		if (informationTO == null)
+		Optional<User> optional = repository.getUser(userId);
+		if (!optional.isPresent())
 			return fail("Could not find user with given id");
+		User user = optional.get();
+		UserInformationTO informationTO = new UserInformationTO(
+				user.getUsername(),
+				user.getEmail(),
+				user.getPassword(),
+				null,
+				user.getUserGroup(),
+				user.getLastlogin().getTime(),
+				user.getActive()
+		);
 		return ok(informationTO);
 	}
 
@@ -104,16 +80,29 @@ public class UserResource {
 	@Path("/{id}")
 	@ApiOperation(value = "deletes a user with the given id")
 	public Response deleteUser(@PathParam("id") int userId) {
-		//TODO need wifi to pull centauri master, get from db
-		return Response.status(200).build();
+		boolean didDelete = repository.delete(userId);
+		if (didDelete)
+			return ok();
+		return fail("Could not find given user");
 	}
 
 	@POST
 	@PathParam("/{id}")
 	@ApiOperation(value = "updates an existing user")
 	public Response updateUser(@PathParam("id") int userId, @ApiParam(value = "the new information from the user", required = true) UserInformationTO informationTO) {
-		//TODO need wifi to pull centauri master, get from db
-		return Response.status(200).build();
+		User user = new User(
+				userId,
+				informationTO.getUsername(),
+				informationTO.getPassword(),
+				informationTO.getEmail(),
+				informationTO.getUserGroup(),
+				new Timestamp(informationTO.getLastLogin()),
+				informationTO.isActive()
+		);
+		boolean updated = repository.update(user);
+		if (updated)
+			return ok();
+		return fail("Could not find given user");
 
 	}
 
@@ -121,8 +110,12 @@ public class UserResource {
 	@Path("/")
 	@ApiOperation(value = "gets a list of all existing users", response = UserTO.class, responseContainer = "List")
 	public Response getAllUsers() {
-		//TODO need wifi to pull centauri master, get from db
-		return Response.status(200).entity(new ArrayList<UserTO>()).build();
+		List<User> users = repository.getUsers();
+		List<UserTO> userTOS = users
+				.stream()
+				.map(user -> new UserTO(user.getUsername(), user.getPassword(), user.getActive()))
+				.collect(Collectors.toList());
+		return ok(userTOS);
 	}
 
 	@GET

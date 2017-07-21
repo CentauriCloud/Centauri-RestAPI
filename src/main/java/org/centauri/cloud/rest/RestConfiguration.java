@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 public class RestConfiguration extends Configuration {
 
-	boolean banane;
+	private boolean devMode;
 }
