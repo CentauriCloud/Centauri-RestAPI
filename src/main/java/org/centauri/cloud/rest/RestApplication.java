@@ -10,6 +10,7 @@ import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
 import org.centauri.cloud.rest.jwt.JWTUtil;
 import org.centauri.cloud.rest.resource.*;
+import org.centauri.cloud.rest.resource.exceptions.DefaultExceptionMapper;
 
 public class RestApplication extends Application<RestConfiguration> {
 
@@ -26,6 +27,8 @@ public class RestApplication extends Application<RestConfiguration> {
 	@Override
 	public void run(RestConfiguration restConfiguration, Environment environment) throws Exception {
 		JWTUtil.init();
+		environment.jersey().register(new DefaultExceptionMapper());
+
 		environment.jersey().register(new ApiListingResource());
 		environment.jersey().register(new SwaggerSerializers());
 		environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
