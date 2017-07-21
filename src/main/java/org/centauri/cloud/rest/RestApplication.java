@@ -3,14 +3,21 @@ package org.centauri.cloud.rest;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.auth.AuthDynamicFeature;
+import io.dropwizard.auth.AuthValueFactoryProvider;
+import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
 import org.centauri.cloud.rest.jwt.JWTUtil;
+import org.centauri.cloud.rest.jwt.JwtAuthenticator;
+import org.centauri.cloud.rest.jwt.JwtAuthorizer;
+import org.centauri.cloud.rest.jwt.JwtUser;
 import org.centauri.cloud.rest.resource.*;
 import org.centauri.cloud.rest.resource.exceptions.DefaultExceptionMapper;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 public class RestApplication extends Application<RestConfiguration> {
 
@@ -27,6 +34,16 @@ public class RestApplication extends Application<RestConfiguration> {
 	@Override
 	public void run(RestConfiguration restConfiguration, Environment environment) throws Exception {
 		JWTUtil.init();
+
+		environment.jersey().register(new AuthDynamicFeature(new OAuthCredentialAuthFilter.Builder<>()
+				.setAuthenticator(new JwtAuthenticator())
+				.setAuthorizer(new JwtAuthorizer())
+				.setPrefix("Bearer")
+				.buildAuthFilter()));
+		environment.jersey().register(new AuthValueFactoryProvider.Binder<>(JwtUser.class));
+		environment.jersey().register(RolesAllowedDynamicFeature.class);
+
+
 		environment.jersey().register(new DefaultExceptionMapper());
 
 		environment.jersey().register(new ApiListingResource());

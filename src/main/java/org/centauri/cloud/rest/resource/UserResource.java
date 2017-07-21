@@ -1,11 +1,9 @@
 package org.centauri.cloud.rest.resource;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import com.google.common.collect.Lists;
+import io.swagger.annotations.*;
 import org.centauri.cloud.rest.database.GroupRepository;
 import org.centauri.cloud.rest.database.UserRepository;
-import org.centauri.cloud.rest.filter.LoginFilter;
 import org.centauri.cloud.rest.jwt.JWTUtil;
 import org.centauri.cloud.rest.to.auth.AuthTO;
 import org.centauri.cloud.rest.to.auth.JwtTO;
@@ -16,6 +14,7 @@ import org.centauri.cloud.rest.to.user.UserTO;
 import org.jooq.generated.rest.tables.pojos.Group;
 import org.jooq.generated.rest.tables.pojos.User;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
@@ -32,6 +31,13 @@ import static org.centauri.cloud.rest.util.ResponseFactory.ok;
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@SwaggerDefinition(
+		securityDefinition = @SecurityDefinition(
+				apiKeyAuthDefinitions = {
+						@ApiKeyAuthDefinition(key = "Bearer", name = "Authorization", in = ApiKeyAuthDefinition.ApiKeyLocation.HEADER)
+				}
+		)
+)
 public class UserResource {
 
 	private UserRepository userRepository = new UserRepository();
@@ -43,13 +49,14 @@ public class UserResource {
 	public Response authentication(@ApiParam(value = "Authentication information (username, password)", required = true) @NotNull @Valid final AuthTO authTO) {
 		String username = userRepository.authenticate(authTO.getEmail(), authTO.getPassword());
 		if (username != null)
-			return ok(new JwtTO(JWTUtil.generateToken(LoginFilter.UserType.USER, "")));
+			return ok(new JwtTO(JWTUtil.generateToken(Lists.newArrayList("ADMIN"), username)));
 		return fail("Wrong credentials");
 	}
 
 	@POST
 	@Path("/new")
-	@ApiOperation(value = "creates a new user. Needs admin")
+	@ApiOperation(value = "creates a new user. Needs admin", authorizations = @Authorization("Bearer"))
+	@RolesAllowed({"ADMIN", "users.new"})
 	public Response createNewUser(@ApiParam(value = "the given data for the new user", required = true) @NotNull @Valid final UserInformationTO informationTO) {
 		User user = new User(
 				null,
@@ -67,7 +74,8 @@ public class UserResource {
 
 	@GET
 	@Path("/{id}")
-	@ApiOperation(value = "gets some information about a single user", response = UserInformationTO.class)
+	@ApiOperation(value = "gets some information about a single user", response = UserInformationTO.class, authorizations = @Authorization("Bearer"))
+	@RolesAllowed({"ADMIN", "users.info"})
 	public Response getUserInformation(@PathParam("id") int userId) {
 		Optional<User> optional = userRepository.getUser(userId);
 		if (!optional.isPresent())
@@ -89,6 +97,7 @@ public class UserResource {
 	@DELETE
 	@Path("/{id}")
 	@ApiOperation(value = "deletes a user with the given id")
+	@RolesAllowed({"ADMIN", "users.delete"})
 	public Response deleteUser(@PathParam("id") int userId) {
 		boolean didDelete = userRepository.delete(userId);
 		if (didDelete)
@@ -98,7 +107,8 @@ public class UserResource {
 
 	@POST
 	@Path("/{id}")
-	@ApiOperation(value = "updates an existing user")
+	@ApiOperation(value = "updates an existing user", authorizations = @Authorization("Bearer"))
+	@RolesAllowed({"ADMIN", "users.update"})
 	public Response updateUser(@PathParam("id") int userId, @ApiParam(value = "the new information from the user", required = true) @NotNull @Valid final UserInformationTO informationTO) {
 		User user = new User(
 				userId,
@@ -118,7 +128,8 @@ public class UserResource {
 
 	@GET
 	@Path("/")
-	@ApiOperation(value = "gets a list of all existing users", response = UserTO.class, responseContainer = "List")
+	@ApiOperation(value = "gets a list of all existing users", response = UserTO.class, responseContainer = "List", authorizations = @Authorization("Bearer"))
+	@RolesAllowed({"ADMIN", "users.all"})
 	public Response getAllUsers() {
 		List<User> users = userRepository.getUsers();
 		List<UserTO> userTOS = users.stream()

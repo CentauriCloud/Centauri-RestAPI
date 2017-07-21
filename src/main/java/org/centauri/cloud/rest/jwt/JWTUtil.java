@@ -5,32 +5,37 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.centauri.cloud.cloud.Cloud;
-import org.centauri.cloud.rest.filter.LoginFilter;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 public class JWTUtil {
 
+	public static final String ROLES = "roles";
+	public static final String USER = "user";
+
 	private static Algorithm algorithm;
-	private static JWTVerifier adminVerifier;
-	private static JWTVerifier userVerifier;
+	private static JWTVerifier verifier;
 	private static char[] chars = "QWERTZUIOPASDFGHJKLYXCVBNMqwertzuiopasdfghjklyxcvbnm1234567890".toCharArray();
 
 	public static void init() {
 		try {
 			algorithm = Algorithm.HMAC512(JWTUtil.generateSecret());
-			adminVerifier = JWT.require(algorithm).withClaim("role", LoginFilter.UserType.ADMIN.getStringed()).build();
-			userVerifier = JWT.require(algorithm).withClaim("role", LoginFilter.UserType.USER.getStringed()).build();
+			verifier = JWT.require(algorithm).build();
 		} catch (UnsupportedEncodingException e) {
 			Cloud.getLogger().error("Encoding exception", e);
 		}
 	}
 
-	public static String generateToken(LoginFilter.UserType type, String ip) {
-		return JWT.create().withClaim("role", type.getStringed()).withClaim("ip", ip).withExpiresAt(Date.from(Instant.now().plus(Duration.ofHours(2)))).sign(algorithm);
+	public static String generateToken(List<String> roles, String username) {
+		return JWT.create()
+				.withArrayClaim(ROLES, roles.toArray(new String[roles.size()]))
+				.withClaim(USER, username)
+				.withExpiresAt(Date.from(Instant.now().plus(Duration.ofHours(1))))
+				.sign(algorithm);
 	}
 
 	public static String generateSecret() {
@@ -42,21 +47,13 @@ public class JWTUtil {
 	}
 
 
-	public static DecodedJWT validateJWT(String token, LoginFilter.UserType type) throws AuthException {
-		switch (type) {
-			case ADMIN:
-				return adminVerifier.verify(token);
-			case USER:
-				return userVerifier.verify(token);
-		}
-		throw new AuthException("No type found", 403);
+	public static JwtUser validateJWT(String token) throws AuthException {
+		DecodedJWT jwt = verifier.verify(token);
+		List<String> roles = jwt.getClaim(ROLES).asList(String.class);
+		String username = jwt.getClaim(USER).asString();
+		return new JwtUser(username, roles);
 	}
-
-	public static void validateIp(String ip, DecodedJWT jwt) throws AuthException {
-		if (!ip.equals(jwt.getClaim("ip").asString())) {
-			throw new AuthException("Wrong ip", 403);
-		}
-	}
+}
 
 //	private static String getIp(Request request) {
 //		String ip = request.headers("X-Forwarded-For");
@@ -77,4 +74,3 @@ public class JWTUtil {
 //		}
 //		return ip;
 //	}
-}
