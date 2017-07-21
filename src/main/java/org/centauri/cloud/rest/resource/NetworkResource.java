@@ -6,13 +6,9 @@ import org.centauri.cloud.cloud.api.Centauri;
 import org.centauri.cloud.cloud.server.BungeeServer;
 import org.centauri.cloud.cloud.server.Daemon;
 import org.centauri.cloud.cloud.server.SpigotServer;
-import org.centauri.cloud.rest.annotations.Nothing;
-import org.centauri.cloud.rest.annotations.Returns;
-import org.centauri.cloud.rest.annotations.Takes;
 import org.centauri.cloud.rest.to.network.HealthTO;
 import org.centauri.cloud.rest.to.network.NodeTO;
 import org.centauri.cloud.rest.to.network.PlayerMetricsTO;
-import org.centauri.cloud.rest.util.ResponseFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

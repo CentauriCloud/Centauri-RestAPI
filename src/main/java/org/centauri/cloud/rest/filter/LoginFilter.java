@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LoginFilter {
 
-//	private final UserType type;
+	//	private final UserType type;
 //
 //	@Override
 //	public void handle(Request request, Response response) throws Exception {

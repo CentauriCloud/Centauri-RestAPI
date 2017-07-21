@@ -1,7 +1,6 @@
 package org.centauri.cloud.rest;
 
 import lombok.Getter;
-import org.centauri.cloud.cloud.module.AbstractModule;
 
 public class RestAPI {
 
@@ -25,7 +24,7 @@ public class RestAPI {
 
 	public void onEnable() {
 		try {
-			new RestApplication().run("server " +"/config.yml");
+			new RestApplication().run("server " + "/config.yml");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

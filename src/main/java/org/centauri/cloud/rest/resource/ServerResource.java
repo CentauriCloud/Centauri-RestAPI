@@ -5,13 +5,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.centauri.cloud.cloud.api.Centauri;
 import org.centauri.cloud.cloud.server.Server;
-import org.centauri.cloud.rest.annotations.Nothing;
-import org.centauri.cloud.rest.annotations.Returns;
-import org.centauri.cloud.rest.annotations.Takes;
 import org.centauri.cloud.rest.to.server.ActionTO;
 import org.centauri.cloud.rest.to.server.ServerInformationTO;
 import org.centauri.cloud.rest.to.server.ServerTO;
-import org.centauri.cloud.rest.util.ResponseFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;

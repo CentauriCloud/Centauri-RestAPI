@@ -5,16 +5,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.centauri.cloud.cloud.api.Centauri;
 import org.centauri.cloud.cloud.template.Template;
-import org.centauri.cloud.rest.annotations.Nothing;
-import org.centauri.cloud.rest.annotations.Returns;
-import org.centauri.cloud.rest.annotations.Takes;
 import org.centauri.cloud.rest.to.template.TemplateInformationTO;
 import org.centauri.cloud.rest.to.template.TemplateTO;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,5 +58,28 @@ public class TemplatesResource {
 		return ok(template.getDir().listFiles());
 	}
 
+	@POST
+	@Path("/{id}/files")
+	@ApiOperation(value = "Uploads a new file")
+	public Response uploadFile(@PathParam("id") String templateId) {
+
+		return ok();
+	}
+
+	@DELETE
+	@Path("/{id}")
+	@ApiOperation(value = "deletes a given template")
+	public Response deleteTemplate(@PathParam("id") String templateId) {
+
+		return ok();
+	}
+
+	@GET
+	@Path("/{id}/pack")
+	@ApiOperation(value = "gives you a zip of the whole template")
+	public Response downloadZip(@PathParam("id") String templateId) {
+
+		return ok();
+	}
 
 }
