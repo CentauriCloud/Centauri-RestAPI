@@ -11,6 +11,7 @@ import io.dropwizard.setup.Environment;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
+import org.centauri.cloud.cloud.Cloud;
 import org.centauri.cloud.rest.auth.jwt.JWTUtil;
 import org.centauri.cloud.rest.auth.jwt.JwtAuthenticator;
 import org.centauri.cloud.rest.auth.jwt.JwtAuthorizer;
@@ -33,6 +34,7 @@ public class RestApplication extends Application<RestConfiguration> {
 
 	@Override
 	public void run(RestConfiguration restConfiguration, Environment environment) throws Exception {
+		Cloud.getLogger().info("run start");
 		JWTUtil.init();
 
 		environment.jersey().register(new AuthDynamicFeature(new OAuthCredentialAuthFilter.Builder<>()
@@ -63,5 +65,6 @@ public class RestApplication extends Application<RestConfiguration> {
 		environment.jersey().register(new TemplatesResource());
 		environment.jersey().register(new CloudResource());
 		environment.jersey().register(new UtilityResource());
+		Cloud.getLogger().info("run stop");
 	}
 }
