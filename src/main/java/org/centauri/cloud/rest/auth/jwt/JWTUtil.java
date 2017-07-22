@@ -1,10 +1,11 @@
-package org.centauri.cloud.rest.jwt;
+package org.centauri.cloud.rest.auth.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.centauri.cloud.cloud.Cloud;
+import org.centauri.cloud.rest.auth.AuthException;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;

@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
@@ -16,7 +16,7 @@ public class GroupInformationTO {
 
 	private Integer id;
 	@Size(max = 30)
-	@NotNull
+	@NotEmpty
 	private String name;
 	private String description;
 	private boolean active;

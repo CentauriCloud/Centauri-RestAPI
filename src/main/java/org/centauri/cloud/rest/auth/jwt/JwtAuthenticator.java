@@ -1,7 +1,8 @@
-package org.centauri.cloud.rest.jwt;
+package org.centauri.cloud.rest.auth.jwt;
 
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
+import org.centauri.cloud.rest.auth.AuthException;
 
 import java.security.Principal;
 import java.util.Optional;

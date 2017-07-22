@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -18,13 +18,13 @@ public class UserInformationTO {
 
 	private Integer id;
 	@Size(max = 30)
-	@NotNull
+	@NotEmpty
 	private String username;
 	@Email
-	@NotNull
+	@NotEmpty
 	@Size(max = 30)
 	private String email;
-	@NotNull
+	@NotEmpty
 	@Size(max = 30)
 	private String password;
 	private List<String> customPermissions;

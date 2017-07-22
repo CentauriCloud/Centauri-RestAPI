@@ -1,4 +1,4 @@
-package org.centauri.cloud.rest.jwt;
+package org.centauri.cloud.rest.auth;
 
 import lombok.Getter;
 

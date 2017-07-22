@@ -2,9 +2,12 @@ package org.centauri.cloud.rest.resource;
 
 import com.google.common.collect.Lists;
 import io.swagger.annotations.*;
+import org.centauri.cloud.rest.auth.jwt.JWTUtil;
+import org.centauri.cloud.rest.auth.role.GROUP;
+import org.centauri.cloud.rest.auth.role.Role;
+import org.centauri.cloud.rest.auth.role.USER;
 import org.centauri.cloud.rest.database.GroupRepository;
 import org.centauri.cloud.rest.database.UserRepository;
-import org.centauri.cloud.rest.jwt.JWTUtil;
 import org.centauri.cloud.rest.to.auth.AuthTO;
 import org.centauri.cloud.rest.to.auth.JwtTO;
 import org.centauri.cloud.rest.to.group.GroupInformationTO;
@@ -27,7 +30,7 @@ import java.util.stream.Collectors;
 import static org.centauri.cloud.rest.util.ResponseFactory.fail;
 import static org.centauri.cloud.rest.util.ResponseFactory.ok;
 
-@Api(value = "/users", description = "Mostly actions with users and login")
+@Api(value = "/users", description = "Mostly actions with users and login", authorizations = @Authorization("Bearer"))
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -55,8 +58,8 @@ public class UserResource {
 
 	@POST
 	@Path("/new")
-	@ApiOperation(value = "creates a new user. Needs admin", authorizations = @Authorization("Bearer"))
-	@RolesAllowed({"ADMIN", "users.new"})
+	@ApiOperation(value = "creates a new user. Needs admin")
+	@RolesAllowed({Role.ADMIN, USER.NEW})
 	public Response createNewUser(@ApiParam(value = "the given data for the new user", required = true) @NotNull @Valid final UserInformationTO informationTO) {
 		User user = new User(
 				null,
@@ -74,8 +77,8 @@ public class UserResource {
 
 	@GET
 	@Path("/{id}")
-	@ApiOperation(value = "gets some information about a single user", response = UserInformationTO.class, authorizations = @Authorization("Bearer"))
-	@RolesAllowed({"ADMIN", "users.info"})
+	@ApiOperation(value = "gets some information about a single user", response = UserInformationTO.class)
+	@RolesAllowed({Role.ADMIN, USER.INFO})
 	public Response getUserInformation(@PathParam("id") int userId) {
 		Optional<User> optional = userRepository.getUser(userId);
 		if (!optional.isPresent())
@@ -97,7 +100,7 @@ public class UserResource {
 	@DELETE
 	@Path("/{id}")
 	@ApiOperation(value = "deletes a user with the given id")
-	@RolesAllowed({"ADMIN", "users.delete"})
+	@RolesAllowed({Role.ADMIN, USER.DELETE})
 	public Response deleteUser(@PathParam("id") int userId) {
 		boolean didDelete = userRepository.delete(userId);
 		if (didDelete)
@@ -107,8 +110,8 @@ public class UserResource {
 
 	@POST
 	@Path("/{id}")
-	@ApiOperation(value = "updates an existing user", authorizations = @Authorization("Bearer"))
-	@RolesAllowed({"ADMIN", "users.update"})
+	@ApiOperation(value = "updates an existing user")
+	@RolesAllowed({Role.ADMIN, USER.UPDATE})
 	public Response updateUser(@PathParam("id") int userId, @ApiParam(value = "the new information from the user", required = true) @NotNull @Valid final UserInformationTO informationTO) {
 		User user = new User(
 				userId,
@@ -123,13 +126,12 @@ public class UserResource {
 		if (updated)
 			return ok();
 		return fail("Could not find given user");
-
 	}
 
 	@GET
 	@Path("/")
-	@ApiOperation(value = "gets a list of all existing users", response = UserTO.class, responseContainer = "List", authorizations = @Authorization("Bearer"))
-	@RolesAllowed({"ADMIN", "users.all"})
+	@ApiOperation(value = "gets a list of all existing users", response = UserTO.class, responseContainer = "List")
+	@RolesAllowed({Role.ADMIN, USER.ALL})
 	public Response getAllUsers() {
 		List<User> users = userRepository.getUsers();
 		List<UserTO> userTOS = users.stream()
@@ -141,6 +143,7 @@ public class UserResource {
 	@GET
 	@Path("/groups")
 	@ApiOperation(value = "gets a list of all existing groups", response = GroupTO.class, responseContainer = "List")
+	@RolesAllowed({Role.ADMIN, GROUP.ALL})
 	public Response getAllUserGroups() {
 		List<Group> groups = groupRepository.getGroups();
 		List<GroupTO> groupTOS = groups.stream()
@@ -152,6 +155,7 @@ public class UserResource {
 	@GET
 	@Path("/groups/{id}")
 	@ApiOperation(value = "gets some information about a single group", response = GroupInformationTO.class)
+	@RolesAllowed({Role.ADMIN, GROUP.INFO})
 	public Response getUserGroupDetails(@PathParam("id") int groupId) {
 		Optional<Group> optional = groupRepository.getGroup(groupId);
 		if (optional.isPresent()) {
@@ -165,6 +169,7 @@ public class UserResource {
 	@POST
 	@Path("/groups")
 	@ApiOperation(value = "creates a new group")
+	@RolesAllowed({Role.ADMIN, GROUP.NEW})
 	public Response createNewUserGroup(@ApiParam(value = "the information for the new group", required = true) @NotNull @Valid GroupInformationTO groupInformationTO) {
 		Group group = new Group(null, groupInformationTO.getName(), groupInformationTO.getDescription(), groupInformationTO.isActive());
 		int id = groupRepository.createNewGroup(group);
