@@ -1,0 +1,5 @@
+assets:
+  overrides:
+      /swagger/: modules/CentauriRestAPI/swagger/
+logging:
+  type: external

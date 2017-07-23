@@ -1,10 +1,10 @@
 package org.centauri.cloud.rest;
 
 import lombok.Getter;
-import org.centauri.cloud.cloud.Cloud;
 import org.centauri.cloud.cloud.module.AbstractModule;
+import org.centauri.cloud.rest.util.ApplicationPreparer;
 
-public class RestAPI extends AbstractModule{
+public class RestAPI extends AbstractModule {
 
 	@Getter private static RestAPI instance;
 
@@ -26,8 +26,11 @@ public class RestAPI extends AbstractModule{
 
 	public void onEnable() {
 		try {
-			Cloud.getLogger().info("onEnable");
-			new RestApplication().run("server " + "/config.yml");
+			instance = this;
+			ApplicationPreparer preparer = new ApplicationPreparer();
+			preparer.checkConfig();
+			preparer.checkSwagger();
+			new RestApplication().run("server", getModuleDirectory().getPath() + "/config.yml");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
